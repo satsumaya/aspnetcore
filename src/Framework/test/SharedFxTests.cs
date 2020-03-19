@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore
             var root = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")) 
                 ? TestData.GetTestDataValue("SharedFrameworkLayoutRoot") 
                 : Environment.GetEnvironmentVariable("DOTNET_ROOT");
-            _sharedFxRoot = Path.Combine(root, "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
+            _sharedFxRoot = Path.Combine(root, "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"));
         }
 
         [Fact]
