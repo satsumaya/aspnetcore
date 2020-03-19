@@ -28,6 +28,8 @@ if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%"
     xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%\
 
+    dir %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%
+
     echo "Adding current directory to nuget sources: %HELIX_WORKITEM_ROOT%"
     dotnet nuget add source %HELIX_WORKITEM_ROOT%
     dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json
