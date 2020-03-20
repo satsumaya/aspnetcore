@@ -26,7 +26,7 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 echo "Checking for Microsoft.AspNetCore.App"
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%"
-    xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%\
+    copy /y .\Microsoft.AspNetCore.App\* %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%\
 
     dir %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%
 
