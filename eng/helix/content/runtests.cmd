@@ -27,7 +27,7 @@ echo "Checking for Microsoft.AspNetCore.App"
 if EXIST ".\Microsoft.AspNetCore.App" (
     echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%"
     
-    dir %DOTNET_ROOT%\shared
+    dir .\Microsoft.AspNetCore.App
     dir %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App
     mkdir -p %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%$runtimeVersion%
     
