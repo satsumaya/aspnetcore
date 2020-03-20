@@ -39,7 +39,6 @@ echo "Set DotNetEfFullPath: $DotNetEfFullPath"
 export NUGET_RESTORE="$DIR/nugetRestore"
 echo "Creating nugetRestore directory: $NUGET_RESTORE"
 mkdir $NUGET_RESTORE
-mkdir logs
 
 ls -la
 
@@ -97,6 +96,7 @@ fi
 if [ -d "Microsoft.AspNetCore.App" ]
 then
     echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
+    mkdir $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
     cp -rf Microsoft.AspNetCore.App/* $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 
     ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
