@@ -97,7 +97,9 @@ fi
 if [ -d "Microsoft.AspNetCore.App" ]
 then
     echo "Found Microsoft.AspNetCore.App directory, copying to $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version."
-    cp -r Microsoft.AspNetCore.App $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+    cp -rf Microsoft.AspNetCore.App/* $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+
+    ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 
     echo "Adding current directory to nuget sources: $DIR"
     dotnet nuget add source $DIR
