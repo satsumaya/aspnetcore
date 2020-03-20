@@ -100,6 +100,8 @@ then
     cp -rf Microsoft.AspNetCore.App/* $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 
     ls -la $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
+    
+    export ASPNET_RUNTIME_PATH=$DOTNET_ROOT/shared/Microsoft.AspNetCore.App/$dotnet_runtime_version
 
     echo "Adding current directory to nuget sources: $DIR"
     dotnet nuget add source $DIR
