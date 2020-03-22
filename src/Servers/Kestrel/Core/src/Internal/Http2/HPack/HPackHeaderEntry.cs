@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         public HPackHeaderEntry After;
 
         /// <summary>
-        /// 
+        /// Initialize header values. An entry will be reinitialized when reused.
         /// </summary>
         public void Initialize(int hash, string name, string value, int index, HPackHeaderEntry next)
         {
@@ -45,6 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             return (uint)HeaderField.GetLength(Name.Length, Value.Length);
         }
 
+        /// <summary>
+        /// Remove entry from the linked list and reset header values.
+        /// </summary>
         public void Remove()
         {
             Before.After = After;
@@ -57,6 +60,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             Value = null;
         }
 
+        /// <summary>
+        /// Add before an entry in the linked list.
+        /// </summary>
         public void AddBefore(HPackHeaderEntry existingEntry)
         {
             After = existingEntry;
