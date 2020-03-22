@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private MemoryPool<byte> _memoryPool;
         private HttpRequestHeaders _httpRequestHeaders;
         private Http2Connection _connection;
+        private Http2HPackEncoder _hpackEncoder;
         private Http2HeadersEnumerator _requestHeadersEnumerator;
         private int _currentStreamId;
         private byte[] _headersBuffer;
@@ -58,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _httpRequestHeaders.Append(HeaderNames.Authority, new StringValues("localhost:80"));
 
             _headersBuffer = new byte[1024 * 16];
+            _hpackEncoder = new Http2HPackEncoder();
 
             var serviceContext = new ServiceContext
             {
@@ -106,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _requestHeadersEnumerator.Initialize(_httpRequestHeaders);
             _requestHeadersEnumerator.MoveNext();
-            _connectionPair.Application.Output.WriteStartStream(streamId: _currentStreamId, _requestHeadersEnumerator, _headersBuffer, endStream: true, frame: _httpFrame);
+            _connectionPair.Application.Output.WriteStartStream(streamId: _currentStreamId, _hpackEncoder, _requestHeadersEnumerator, _headersBuffer, endStream: true, frame: _httpFrame);
             await _connectionPair.Application.Output.FlushAsync();
 
             while (true)
