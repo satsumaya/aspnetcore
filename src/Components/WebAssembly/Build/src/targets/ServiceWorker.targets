@@ -90,28 +90,24 @@
       <Content Remove="@(ServiceWorker); %(ServiceWorker.PublishedContent)" />
 
       <!-- However, do include the rewritten service worker files in the output -->
-      <_BlazorOutputWithTargetPath Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" TargetOutputPath="%(_ServiceWorkerSource.TargetPath)" />
+      <Content Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" />
     </ItemGroup>
   </Target>
 
   <Target Name="_ComputeServiceWorkerOutputsPerServiceWorker"
           Inputs="@(ServiceWorker)"
           Outputs="%(Identity).nonexistent">
-    <!-- If there is a PublishedContent variant, prepare to use that. If not, use the identity. -->
     <PropertyGroup>
+      <!-- If there is a PublishedContent variant, prepare to use that. If not, use the identity. -->
       <_ServiceWorkerIdentity>%(ServiceWorker.Identity)</_ServiceWorkerIdentity>
       <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' != ''">%(ServiceWorker.PublishedContent)</_ServiceWorkerContentSourcePath>
       <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">$(_ServiceWorkerIdentity)</_ServiceWorkerContentSourcePath>
     </PropertyGroup>
 
-    <!-- Since we need to remove the wwwroot prefix, be sure it has one -->
-    <Error Text="ServiceWorker items must be located within the wwwroot directory. Found '$(_ServiceWorkerIdentity)'"
-           Condition="!$([System.String]::Copy('$(_ServiceWorkerIdentity)').StartsWith('wwwroot\'))" />
-
     <ItemGroup>
       <_ServiceWorkerSource Include="$(_ServiceWorkerContentSourcePath)">
         <IntermediatePath>$(IntermediateOutputPath)blazor\serviceworkers\$(_ServiceWorkerIdentity)</IntermediatePath>
-        <TargetPath>$([System.String]::Copy('$(_ServiceWorkerIdentity)').Substring(8))</TargetPath>
+        <Link>$(_ServiceWorkerIdentity)</Link>
       </_ServiceWorkerSource>
     </ItemGroup>
   </Target>
