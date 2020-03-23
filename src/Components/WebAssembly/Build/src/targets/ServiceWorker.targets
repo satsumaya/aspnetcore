@@ -44,7 +44,13 @@
         Condition="'%(RelativePath)' != '$(ServiceWorkerAssetsManifest)'">
         <AssetUrl>$([System.String]::Copy('$([System.String]::Copy('%(StaticWebAsset.BasePath)').TrimEnd('/'))/%(StaticWebAsset.RelativePath)').Replace('\','/').TrimStart('/'))</AssetUrl>
       </ServiceWorkerAssetsManifestItem>
+
+      <!-- Don't include compressed files in the manifest, since their existence is transparent to the client -->
       <ServiceWorkerAssetsManifestItem Remove="@(_CompressedStaticWebAsset->'%(FullPath)')" />
+
+      <!-- Don't include the service worker files in the manifest, as the service worker doesn't need to fetch itself -->
+      <_ServiceWorkerSourcesToRemove Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" />
+      <ServiceWorkerAssetsManifestItem Remove="@(_ServiceWorkerSourcesToRemove->'%(FullPath)')" />
     </ItemGroup>
 
     <GetFileHash Files="@(ServiceWorkerAssetsManifestItem)" Algorithm="SHA256" HashEncoding="base64">
@@ -53,11 +59,10 @@
   </Target>
 
   <!--
-    If no ServiceWorkerAssetsManifestVersion was specified, we compute a default value by combining all the asset hashes.
+    Compute a default ServiceWorkerAssetsManifestVersion value by combining all the asset hashes.
     This is useful because then clients will only have to repopulate caches if the contents have changed.
   -->
-  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion"
-          Condition="'$(ServiceWorkerAssetsManifestVersion)' == ''">
+  <Target Name="_ComputeDefaultServiceWorkerAssetsManifestVersion">
     <PropertyGroup>
       <_CombinedHashIntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkerhashes.txt</_CombinedHashIntermediatePath>
     </PropertyGroup>
@@ -65,6 +70,7 @@
     <WriteLinesToFile
       File="$(_CombinedHashIntermediatePath)"
       Lines="@(_ServiceWorkerAssetsManifestItemWithHash->'%(FileHash)')"
+      WriteOnlyWhenDifferent="true"
       Overwrite="true" />
 
     <GetFileHash Files="$(_CombinedHashIntermediatePath)" Algorithm="SHA256" HashEncoding="base64">
@@ -72,8 +78,64 @@
     </GetFileHash>
 
     <PropertyGroup>
-      <ServiceWorkerAssetsManifestVersion>$([System.String]::Copy('%(_ServiceWorkerAssetsManifestCombinedHash.FileHash)').Substring(0, 8))</ServiceWorkerAssetsManifestVersion>
+      <ServiceWorkerAssetsManifestVersion Condition="'$(ServiceWorkerAssetsManifestVersion)' == ''">$([System.String]::Copy('%(_ServiceWorkerAssetsManifestCombinedHash.FileHash)').Substring(0, 8))</ServiceWorkerAssetsManifestVersion>
     </PropertyGroup>
+  </Target>
+
+  <!-- Service worker files and their PublishedContent variants aren't regular content items, so remove them from @(Content) -->
+  <Target Name="_RemoveServiceWorkerContentItems" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <Content Remove="@(ServiceWorker); %(ServiceWorker.PublishedContent)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Include the rewritten service worker files in the output -->
+  <Target Name="_ComputeServiceWorkerOutputs"
+          BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs"
+          DependsOnTargets="_ComputeServiceWorkerOutputsPerServiceWorker">
+    <ItemGroup>
+      <Content Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" Link="%(_ServiceWorkerSource.TargetPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ComputeServiceWorkerOutputsPerServiceWorker"
+          Inputs="@(ServiceWorker)"
+          Outputs="%(Identity).nonexistent">
+    <!-- If there is a PublishedContent variant, prepare to use that. If not, use the identity. -->
+    <PropertyGroup>
+      <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' != ''">%(ServiceWorker.PublishedContent)</_ServiceWorkerContentSourcePath>
+      <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</_ServiceWorkerContentSourcePath>
+    </PropertyGroup>
+
+    <!-- We don't want to make assumptions about the filename of the service worker, so for the intermediate filename, use a hash -->
+    <Hash ItemsToHash="$(_ServiceWorkerContentSourcePath)">
+      <Output TaskParameter="HashResult" PropertyName="_ServiceWorkerContentSourcePathHash" />
+    </Hash>
+    <ItemGroup>
+      <_ServiceWorkerSource Include="$(_ServiceWorkerContentSourcePath)">
+        <IntermediatePath>$(IntermediateOutputPath)blazor\serviceworker-$(_ServiceWorkerContentSourcePathHash).txt</IntermediatePath>
+        <TargetPath>%(ServiceWorker.Identity)</TargetPath>
+      </_ServiceWorkerSource>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveServiceWorkerOutputs"
+          AfterTargets="_ComputeDefaultServiceWorkerAssetsManifestVersion"
+          DependsOnTargets="_GenerateIntermediateFilePerServiceWorker">
+  </Target>
+
+  <Target Name="_GenerateIntermediateFilePerServiceWorker"
+          Inputs="@(_ServiceWorkerSource); $(_CombinedHashIntermediatePath)"
+          Outputs="%(IntermediatePath)">
+    <!-- This should never happen. It's to diagnose ordering errors only. -->
+    <Error Text="Internal error: ServiceWorkerAssetsManifestVersion was not populated" Condition="'$(ServiceWorkerAssetsManifestVersion)' == ''" />
+
+    <Copy SourceFiles="@(_ServiceWorkerSource)" DestinationFiles="%(IntermediatePath)" />
+    <WriteLinesToFile File="%(_ServiceWorkerSource.IntermediatePath)" Lines="/* Manifest version: $(ServiceWorkerAssetsManifestVersion) */" />
+
+    <ItemGroup>
+      <FileWrites Include="%(_ServiceWorkerSource.IntermediatePath)" />
+    </ItemGroup>
   </Target>
 
 </Project>
