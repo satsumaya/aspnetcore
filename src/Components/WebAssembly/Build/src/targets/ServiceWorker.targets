@@ -91,10 +91,10 @@
 
   <!-- Include the rewritten service worker files in the output -->
   <Target Name="_ComputeServiceWorkerOutputs"
-          BeforeTargets="ResolveCurrentProjectStaticWebAssetsInputs"
+          BeforeTargets="_ResolveBlazorOutputs"
           DependsOnTargets="_ComputeServiceWorkerOutputsPerServiceWorker">
     <ItemGroup>
-      <Content Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" Link="%(_ServiceWorkerSource.TargetPath)" />
+      <_BlazorOutputWithTargetPath Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" TargetOutputPath="%(_ServiceWorkerSource.TargetPath)" />
     </ItemGroup>
   </Target>
 
@@ -103,18 +103,19 @@
           Outputs="%(Identity).nonexistent">
     <!-- If there is a PublishedContent variant, prepare to use that. If not, use the identity. -->
     <PropertyGroup>
+      <_ServiceWorkerIdentity>%(ServiceWorker.Identity)</_ServiceWorkerIdentity>
       <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' != ''">%(ServiceWorker.PublishedContent)</_ServiceWorkerContentSourcePath>
-      <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</_ServiceWorkerContentSourcePath>
+      <_ServiceWorkerContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">$(_ServiceWorkerIdentity)</_ServiceWorkerContentSourcePath>
     </PropertyGroup>
 
-    <!-- We don't want to make assumptions about the filename of the service worker, so for the intermediate filename, use a hash -->
-    <Hash ItemsToHash="$(_ServiceWorkerContentSourcePath)">
-      <Output TaskParameter="HashResult" PropertyName="_ServiceWorkerContentSourcePathHash" />
-    </Hash>
+    <!-- Since we need to remove the wwwroot prefix, be sure it has one -->
+    <Error Text="ServiceWorker items must be located within the wwwroot directory. Found '$(_ServiceWorkerIdentity)'"
+           Condition="!$([System.String]::Copy('$(_ServiceWorkerIdentity)').StartsWith('wwwroot\'))" />
+
     <ItemGroup>
       <_ServiceWorkerSource Include="$(_ServiceWorkerContentSourcePath)">
-        <IntermediatePath>$(IntermediateOutputPath)blazor\serviceworker-$(_ServiceWorkerContentSourcePathHash).txt</IntermediatePath>
-        <TargetPath>%(ServiceWorker.Identity)</TargetPath>
+        <IntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkers\$(_ServiceWorkerIdentity)</IntermediatePath>
+        <TargetPath>$([System.String]::Copy('$(_ServiceWorkerIdentity)').Substring(8))</TargetPath>
       </_ServiceWorkerSource>
     </ItemGroup>
   </Target>
