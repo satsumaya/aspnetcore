@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var enumerator = new Http2HeadersEnumerator();
 
             var http2HPackEncoder = new Http2HPackEncoder();
-            http2HPackEncoder.setMaxHeaderTableSize(buffer, 256);
+            http2HPackEncoder.SetMaxHeaderTableSize(256);
 
             // First response
             enumerator.Initialize(headers);
