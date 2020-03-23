@@ -82,18 +82,14 @@
     </PropertyGroup>
   </Target>
 
-  <!-- Service worker files and their PublishedContent variants aren't regular content items, so remove them from @(Content) -->
-  <Target Name="_RemoveServiceWorkerContentItems" BeforeTargets="AssignTargetPaths">
-    <ItemGroup>
-      <Content Remove="@(ServiceWorker); %(ServiceWorker.PublishedContent)" />
-    </ItemGroup>
-  </Target>
-
-  <!-- Include the rewritten service worker files in the output -->
   <Target Name="_ComputeServiceWorkerOutputs"
-          BeforeTargets="_ResolveBlazorOutputs"
+          BeforeTargets="AssignTargetPaths"
           DependsOnTargets="_ComputeServiceWorkerOutputsPerServiceWorker">
     <ItemGroup>
+      <!-- Service worker files and their PublishedContent variants aren't regular content items, so remove them from @(Content) -->
+      <Content Remove="@(ServiceWorker); %(ServiceWorker.PublishedContent)" />
+
+      <!-- However, do include the rewritten service worker files in the output -->
       <_BlazorOutputWithTargetPath Include="@(_ServiceWorkerSource->'%(IntermediatePath)')" TargetOutputPath="%(_ServiceWorkerSource.TargetPath)" />
     </ItemGroup>
   </Target>
@@ -114,7 +110,7 @@
 
     <ItemGroup>
       <_ServiceWorkerSource Include="$(_ServiceWorkerContentSourcePath)">
-        <IntermediatePath>$(_BlazorIntermediateOutputPath)serviceworkers\$(_ServiceWorkerIdentity)</IntermediatePath>
+        <IntermediatePath>$(IntermediateOutputPath)blazor\serviceworkers\$(_ServiceWorkerIdentity)</IntermediatePath>
         <TargetPath>$([System.String]::Copy('$(_ServiceWorkerIdentity)').Substring(8))</TargetPath>
       </_ServiceWorkerSource>
     </ItemGroup>
