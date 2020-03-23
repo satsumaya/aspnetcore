@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
