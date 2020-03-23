@@ -112,20 +112,17 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveServiceWorkerOutputs"
+  <!-- Once we've computed a SWAM version, we can create service worker intermediate files with that version appended -->
+  <Target Name="_GenerateServiceWorkerIntermediateFile"
           AfterTargets="_ComputeDefaultServiceWorkerAssetsManifestVersion"
-          DependsOnTargets="_GenerateIntermediateFilePerServiceWorker">
+          DependsOnTargets="_GenerateServiceWorkerIntermediateFilePerServiceWorker">
   </Target>
 
-  <Target Name="_GenerateIntermediateFilePerServiceWorker"
+  <Target Name="_GenerateServiceWorkerIntermediateFilePerServiceWorker"
           Inputs="@(_ServiceWorkerSource); $(_CombinedHashIntermediatePath)"
           Outputs="%(IntermediatePath)">
-    <!-- This should never happen. It's to diagnose ordering errors only. -->
-    <Error Text="Internal error: ServiceWorkerAssetsManifestVersion was not populated" Condition="'$(ServiceWorkerAssetsManifestVersion)' == ''" />
-
     <Copy SourceFiles="@(_ServiceWorkerSource)" DestinationFiles="%(IntermediatePath)" />
     <WriteLinesToFile File="%(_ServiceWorkerSource.IntermediatePath)" Lines="/* Manifest version: $(ServiceWorkerAssetsManifestVersion) */" />
-
     <ItemGroup>
       <FileWrites Include="%(_ServiceWorkerSource.IntermediatePath)" />
     </ItemGroup>
