@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         protected abstract Task ProcessRequest(HttpContext httpContext);
 
-        [GlobalSetup]
         public virtual void GlobalSetup()
         {
             _memoryPool = SlabMemoryPoolFactory.Create();

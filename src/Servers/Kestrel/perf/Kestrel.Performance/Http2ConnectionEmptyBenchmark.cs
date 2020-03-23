@@ -14,8 +14,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private string _responseData;
 
+        [GlobalSetup]
         public override void GlobalSetup()
         {
+            base.GlobalSetup();
             _responseData = new string('!', ResponseDataLength);
         }
 
