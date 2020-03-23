@@ -9,8 +9,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class Http2ConnectionHeadersBenchmark : Http2ConnectionBenchmarkBase
     {
-        [Params(0, 1, 4, 32)]
+        [Params(1, 4, 32)]
         public int CustomHeaders { get; set; }
+
+        [Params(true, false)]
+        public bool HeadersChange { get; set; }
 
         private int _headerIndex;
 
@@ -18,7 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             for (var i = 0; i < CustomHeaders; i++)
             {
-                httpContext.Response.Headers["CustomHeader" + _headerIndex++] = "The quick brown fox jumps over the lazy dog.";
+                httpContext.Response.Headers["CustomHeader" + _headerIndex] = "The quick brown fox jumps over the lazy dog.";
+                if (HeadersChange)
+                {
+                    _headerIndex++;
+                }
             }
             
             return Task.CompletedTask;
