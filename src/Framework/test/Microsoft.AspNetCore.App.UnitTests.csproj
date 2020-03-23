@@ -8,7 +8,7 @@
     <TestDependsOnAspNetRef>true</TestDependsOnAspNetRef>
     
     <!-- Some tests still do not work on Helix, so continue running these on azdo for now as well -->
-    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>    
+    <SkipTests>false</SkipTests>    
   </PropertyGroup>
 
   <ItemGroup>
