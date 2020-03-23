@@ -131,6 +131,7 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        [SkipOnHelix("missing file from sfx builds")]
         public void ItContainsVersionFile()
         {
             var versionFile = Path.Combine(_sharedFxRoot, ".version");
