@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("missing file from sfx builds")]
         public void ItContainsVersionFile()
         {
